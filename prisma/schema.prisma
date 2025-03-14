@@ -1,0 +1,35 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Coupon {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  isActive  Boolean  @default(true)
+  position  Int      // For round-robin ordering
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  claims    Claim[]
+}
+
+model Claim {
+  id        String   @id @default(cuid())
+  couponId  String
+  coupon    Coupon   @relation(fields: [couponId], references: [id])
+  ip        String
+  sessionId String
+  createdAt DateTime @default(now())
+
+  @@index([ip])
+  @@index([sessionId])
+  @@index([createdAt])
+}
+
